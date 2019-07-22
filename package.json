@@ -4,7 +4,7 @@
   "description": "Generate KenKen puzzles in a variety of formats.",
   "main": "dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha -r ts-node/register test/**/*.spec.ts"
   },
   "keywords": [
     "KenKen",
@@ -13,7 +13,11 @@
   "author": "wyattis",
   "license": "MIT",
   "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.7",
     "@types/node": "^12.6.8",
+    "chai": "^4.2.0",
+    "mocha": "^6.2.0",
     "nodemon": "^1.19.1",
     "ts-node": "^8.3.0",
     "tslint": "^5.18.0",

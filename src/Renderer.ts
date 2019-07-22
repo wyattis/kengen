@@ -12,6 +12,16 @@ const OpStrings = {
 
 export class Renderer {
 
+  static defaultRenderOptions: CanvasRenderOptions = {
+    cellSize: 100,
+    cellPadding: 5,
+    solutionFont: '30px Arial',
+    mathFont: '20px Arial',
+    thickness: 1,
+    withSolution: false,
+    lineJoin: 'round'
+  }
+
   static makeCanvas (width: number, height: number): HTMLCanvasElement {
     try {
       const canvas = document.createElement('canvas')
@@ -38,30 +48,59 @@ export class Renderer {
     ctx.stroke()
   }
 
-  static renderCanvas (kenKen: KenKen, ctx: CanvasRenderingContext2D, renderOpts: CanvasRenderOptions = { cellSize: 50, thickness: 2, withSolution: false }): void {
+  static renderCanvas (kenKen: KenKen, ctx: CanvasRenderingContext2D, renderOpts: CanvasRenderOptions = {}): void {
+    renderOpts = Object.assign({}, Renderer.defaultRenderOptions, renderOpts)
+    const { x: width, y: height } = Renderer.getCellCoords({ col: kenKen.size , row: kenKen.size }, renderOpts)
+    ctx.canvas.width = width
+    ctx.canvas.height = height
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, width, height)
     ctx.fillStyle = 'black'
     ctx.textAlign = 'start'
     ctx.textBaseline = 'top'
+    ctx.strokeStyle = 'grey'
+    ctx.lineWidth = renderOpts.thickness
+    ctx.lineJoin = renderOpts.lineJoin
+
+    // Draw the light borders on all of the cells
+    for (let i = 0; i < kenKen.cells.length; i++) {
+      const pos = KenKenGenerator.getCoords(i, kenKen.size)
+      const { x, y } = Renderer.getCellCoords(pos, renderOpts)
+      const { x: x2, y: y2 } = Renderer.getCellCoords({ col: pos.col + 1, row: pos.row + 1 }, renderOpts)
+      ctx.strokeRect(x, y, x2 - x, y2 - y)
+    }
+
+    ctx.strokeStyle = 'black'
+    ctx.lineWidth = renderOpts.thickness * 2
+    // Draw the outside border first
+    ctx.strokeRect(0, 0, width, height)
+
+    // Draw the each group
+    ctx.font = renderOpts.mathFont
     for (const group of kenKen.math) {
       // Draw the operation text
       const operationCellIndex = Math.min(...group.cells)
       let { x, y } = Renderer.getCellCoords(KenKenGenerator.getCoords(operationCellIndex, kenKen.size), renderOpts)
       const opString = group.cells.length > 1 ? OpStrings[group.operation] + group.result : '' + group.result
-      console.log('opstring', opString)
-      ctx.fillText(opString, x, y)
-      const cellOffset = KenKenGenerator.getCoords(group.cells[0], kenKen.size)
+      ctx.fillText(opString, x + renderOpts.cellPadding, y + renderOpts.cellPadding)
       const edges: Point[] = Renderer.getGroupEdges(group.cells, kenKen.size).map(p => Renderer.getCellCoords({
-        col: p.x + cellOffset.col,
-        row: p.y + cellOffset.row
+        col: p.x,
+        row: p.y
       }, renderOpts))
+      console.log(group.result, group.cells, edges)
       Renderer.drawPolygon(ctx, edges)
     }
+
+    // Draw the solution
+    ctx.font = renderOpts.solutionFont
     if (renderOpts.withSolution) {
       for (let i = 0; i < kenKen.cells.length; i++) {
         const cell = kenKen.cells[i]
-        console.log('cell', cell)
+        const { x: cellWidth, y: cellHeight } = Renderer.getCellCoords({ row: 1, col: 1 }, renderOpts)
         const { x, y } = Renderer.getCellCoords(KenKenGenerator.getCoords(i, kenKen.size), renderOpts)
-        ctx.fillText(kenKen.cells[i].toString(), x, y)
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(cell.toString(), x + cellWidth / 2, y + cellHeight / 2)
       }
     }
   }
@@ -80,12 +119,11 @@ export class Renderer {
   }
 
   static getGroupEdges (groupCells: number[], size: number): Point[] {
-    console.log('group', groupCells)
     const grid: GridGraph<number> = new GridGraph()
 
     for (const cell of groupCells) {
       const { row, col } = KenKenGenerator.getCoords(cell, size)
-      grid.add(row, col, cell)
+      grid.add(col, row, cell)
     }
 
     // Check if the last edge reaches the
@@ -107,8 +145,7 @@ export class Renderer {
     let { row, col } = KenKenGenerator.getCoords(groupCells[0], size)
     let edges: Line[] = []
     let direction: Direction = Direction.RIGHT
-    let cell: SpaceQuad<number> = grid.get(row, col)
-    console.log('cell 1', KenKenGenerator.getCoords(cell.data, size))
+    let cell: SpaceQuad<number> = grid.get(col, row)
     let c = 0
     while (!isCompletePolygon(edges) && c < 10) {
       let directionQueue = Renderer.getDirectionOrder(direction)
@@ -116,21 +153,26 @@ export class Renderer {
       let directionCandidate = directionQueue.next()
       let nextCell = GridGraph.getCellInDirection(directionCandidate, cell)
       while (!nextCell && directionCandidate !== null) {
-        console.log('nextCell', nextCell)
         if (!nextCell) {
+          let nextEdge: Line
           switch (directionCandidate) {
             case Direction.UP:
-              cellEdges.push({ from: { x: cell.x, y: cell.y }, to: { x: cell.x + 1, y: cell.y } })
+              nextEdge = { from: { x: cell.x, y: cell.y }, to: { x: cell.x + 1, y: cell.y } }
               break
             case Direction.RIGHT:
-              cellEdges.push({ from: { x: cell.x + 1, y: cell.y }, to: { x: cell.x + 1, y: cell.y + 1 } })
+              nextEdge = { from: { x: cell.x + 1, y: cell.y }, to: { x: cell.x + 1, y: cell.y + 1 } }
               break
             case Direction.DOWN:
-              cellEdges.push({ from: { x: cell.x + 1, y: cell.y + 1 }, to: { x: cell.x, y: cell.y + 1 } })
+              nextEdge = { from: { x: cell.x + 1, y: cell.y + 1 }, to: { x: cell.x, y: cell.y + 1 } }
               break
             case Direction.LEFT:
-              cellEdges.push({ from: { x: cell.x, y: cell.y + 1 }, to: { x: cell.x , y: cell.y } })
+              nextEdge = { from: { x: cell.x, y: cell.y + 1 }, to: { x: cell.x , y: cell.y } }
               break
+          }
+          cellEdges.push(nextEdge)
+          // Break if we've reached the end
+          if ((edges.length && Renderer.pointsAreSame(nextEdge.to, edges[0].from)) || (cellEdges.length > 1 && Renderer.pointsAreSame(cellEdges[0].from, nextEdge.to))) {
+            return linesToPolygon(edges.concat(cellEdges))
           }
         }
         directionCandidate = directionQueue.next()
@@ -143,10 +185,14 @@ export class Renderer {
       }
       c++
       cell = nextCell
+      direction = directionCandidate
       edges = edges.concat(cellEdges)
-      console.log('next cell', c, cellEdges)
     }
     return linesToPolygon(edges)
+  }
+
+  static pointsAreSame (pointA: Point, pointB: Point): boolean {
+    return pointA.x === pointB.x && pointA.y === pointB.y
   }
 
 }

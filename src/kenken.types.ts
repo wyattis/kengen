@@ -1,8 +1,3 @@
-export interface KenKenOptions {
-  operations: MathOperators[]
-  size: number
-}
-
 export enum MathOperators {
   ADDITION = 'A',
   SUBTRACTION = 'S',
@@ -16,15 +11,29 @@ export interface MathGroup {
   cells: number[]
 }
 
-export interface KenKen extends KenKenOptions {
+export interface KenKen {
   math: MathGroup[]
   cells: number[]
+  operations: MathOperators[]
+  size: number
+  seed: number
+}
+
+export interface KenKenOptions {
+  maxSingleCells?: number
+  size?: number
+  seed?: number
+  operations?: MathOperators[]
 }
 
 export interface CanvasRenderOptions {
-  cellSize: number
-  thickness: number
-  withSolution: boolean
+  cellSize?: number
+  thickness?: number
+  cellPadding?: number
+  solutionFont?: string
+  mathFont?: string
+  withSolution?: boolean
+  lineJoin?: CanvasLineJoin
 }
 
 export enum Direction {

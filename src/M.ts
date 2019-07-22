@@ -1,10 +1,35 @@
+// Simple seedable Psuedo random number generator
+let seed = 1
+let rng: () => number = Math.random
+function prng (): number {
+  seed = seed * 16807 % 2147483647
+  return (seed - 1) / 2147483646
+}
+
+/**
+ * Set the seed for our prng
+ * @param seed
+ */
+export function setSeed (v: number) {
+  seed = v
+  rng = prng
+}
+
+/**
+ * Remove any previously set seed on the random number generator
+ */
+export function clearSeed () {
+  seed = 1
+  rng = Math.random
+}
+
 /**
  * Returns a random float between min and max.
  * @param min
  * @param max
  */
 export function random (min: number, max: number): number {
-  return Math.random() * (max - min) + min
+  return rng() * (max - min) + min
 }
 
 /**
@@ -49,4 +74,25 @@ export function intersection<T> (setA: T[], setB: T[]): T[] {
 export function randomFrom<T> (arr: T[]): T {
   if (!arr.length) return null
   return arr[randomInt(0, arr.length)]
+}
+
+// Shuffle an array in place
+export function shuffle<T> (arr: T[]): T[] {
+  let m = arr.length
+  let t
+  let i
+
+  // While there remain elements to shuffle…
+  while (m) {
+
+    // Pick a remaining element…
+    i = Math.floor(Math.random() * m--)
+
+    // And swap it with the current element.
+    t = arr[m]
+    arr[m] = arr[i]
+    arr[i] = t
+  }
+
+  return arr
 }

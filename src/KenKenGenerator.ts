@@ -1,20 +1,29 @@
-import { intersection, randomFrom, randomInt, range } from './M'
+import { intersection, randomFrom, randomInt, range, setSeed, shuffle } from './M'
 import { KenKen, KenKenOptions, MathGroup, MathOperators } from './kenken.types'
+import { Queue } from './Queue'
 
 // Shapes represented as a 2d binary grid
 const shapes2: number[][][] = [[[1]], [[1, 1]]]
-// const shapes3 = shapes2.concat([[[1, 1, 1]], [[1, 1], [1, 0]], [[1, 1], [1, 1]]])
-// const shapes4 = shapes3.concat([[[1, 1, 1, 1]], [[1, 1, 1], [1, 0, 0]], [[1, 1, 1], [0, 0, 1]], [[1, 1, 1], [0, 1, 0]], [[1, 1, 1], [1, 0, 1]]])
-// const shapes5 = shapes4.concat([[[1, 1, 0], [0, 1, 1]], [[0, 1, 1], [1, 1, 0]]])
-// const shapes6 = shapes5.concat([])
-const shapes3 = shapes2
-const shapes4 = shapes2
-const shapes5 = shapes2
-const shapes6 = shapes2
+const shapes3 = shapes2.concat([[[1, 1, 1]], [[1, 1], [1, 0]], [[1, 1], [1, 1]]])
+const shapes4 = shapes3.concat([[[1, 1, 1, 1]], [[1, 1, 1], [1, 0, 0]], [[1, 1, 1], [0, 0, 1]], [[1, 1, 1], [0, 1, 0]], [[1, 1, 1], [1, 0, 1]]])
+const shapes5 = shapes4.concat([[[1, 1, 0], [0, 1, 1]], [[0, 1, 1], [1, 1, 0]]])
+const shapes6 = shapes5.concat([])
 
 export class KenKenGenerator {
 
-  static generate (opts: KenKenOptions = { size: 4, operations: [MathOperators.ADDITION, MathOperators.SUBTRACTION] }): KenKen {
+  static defaultOptions = {
+    size: 4,
+    operations: [MathOperators.ADDITION, MathOperators.SUBTRACTION],
+    maxSingleCells: 2
+  }
+
+  static generate (opts: KenKenOptions = {}): KenKen {
+    opts = Object.assign({}, KenKenGenerator.defaultOptions, opts)
+
+    // Set the RNG seed
+    const seed = opts.seed || randomInt(1, Math.pow(2, 32))
+    setSeed(seed)
+
     // Fill the cells randomly while satisfying row and column constraints
     const cells = KenKenGenerator.randomizeCells(opts)
     console.log('cells', cells)
@@ -26,12 +35,13 @@ export class KenKenGenerator {
     return {
       size: opts.size,
       operations: opts.operations,
+      seed,
       cells,
       math
     }
   }
 
-  static randomizeCells (opts: KenKenOptions, maximumAttempts = 10, attempts = 0): number[] {
+  static randomizeCells (opts: KenKenOptions, maximumAttempts = 30, attempts = 0): number[] {
     if (attempts > maximumAttempts) throw Error('Not able to find cells that fit')
     const numCells = Math.pow(opts.size, 2)
     const rowQueue: number[][] = Array.from({ length: opts.size }, (_, i) => range(1, opts.size + 1))
@@ -42,7 +52,7 @@ export class KenKenGenerator {
       const candidates = intersection(rowQueue[row], colQueue[col])
       if (candidates.length === 0) {
         console.log('retrying', attempts)
-        return KenKenGenerator.randomizeCells(opts, maximumAttempts, attempts++)
+        return KenKenGenerator.randomizeCells(opts, maximumAttempts, attempts + 1)
       }
       const candidate = randomFrom(candidates)
       const colIndex = colQueue[col].indexOf(candidate)
@@ -123,9 +133,17 @@ export class KenKenGenerator {
   static makeSpacialGroups (cells: number[], opts: KenKenOptions): number[][] {
     const availableShapes = KenKenGenerator.getShapeOptions(opts)
 
-    function shapeFits (indices: number[], sieve: Set<number>): boolean {
+    function shapeFits (indices: number[], sieve: Set<number>, size: number): boolean {
+      let positions: {col: number, row: number}[] = []
       for (const index of indices) {
-        if (sieve.has(index)) return false
+        // If the position already belongs to another group or is invalid we return false
+        if (sieve.has(index) || index >= Math.pow(size, 2)) return false
+        const pos = KenKenGenerator.getCoords(index, size)
+        if (!positions.length) {
+          positions.push(pos)
+        } else {
+          if (!positions.find(p => p.col === pos.col || p.row === pos.row)) return false
+        }
       }
       return true
     }
@@ -144,18 +162,25 @@ export class KenKenGenerator {
 
     const groups: number[][] = []
     const cellSieve: Set<number> = new Set()
+    let numSingleCellGroups = 0
     for (let i = 0; i < cells.length; i++) {
       // Skip cells that have already been added to a group
       if (cellSieve.has(i)) continue
 
-      // Randomly try shapes until one fits or we run out of shape options
-      const potentialShapes = availableShapes.slice(0)
+      shuffle(availableShapes)
+      let shapesQueue
+      // We filter out the single cell group once the maximum number has been exceeded
+      if (numSingleCellGroups >= 2) {
+        shapesQueue = new Queue(availableShapes.filter(s => !(s.length === 1 && s[0].length === 1)))
+      } else {
+        shapesQueue = new Queue(availableShapes)
+      }
       let candidate
       let shapeIndices
       do {
-        candidate = randomFrom(potentialShapes)
+        candidate = shapesQueue.next()
         shapeIndices = getShapeIndices(candidate, opts.size, i)
-      } while (candidate && !shapeFits(shapeIndices, cellSieve))
+      } while (candidate && !shapeFits(shapeIndices, cellSieve, opts.size))
 
       if (!candidate || shapeIndices.length === 0) {
         console.log('candidate', candidate, shapeIndices)
@@ -167,6 +192,9 @@ export class KenKenGenerator {
         cellSieve.add(index)
       }
 
+      if (shapeIndices.length === 1) {
+        numSingleCellGroups++
+      }
       groups.push(shapeIndices)
 
     }
