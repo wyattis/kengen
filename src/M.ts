@@ -38,7 +38,7 @@ export function random (min: number = 0, max: number = 1): number {
  * @param max
  */
 export function randomInt (min: number, max: number): number {
-  return Math.floor(random(min, max))
+  return Math.floor(rng() * (max - min + 1))
 }
 
 /**
@@ -47,7 +47,7 @@ export function randomInt (min: number, max: number): number {
  * @param max
  */
 export function range (min: number, max: number): number[] {
-  return Array.from({length: Math.round(max - min)}, (_, i) => min + i)
+  return Array.from({ length: Math.round(max - min) }, (_, i) => min + i)
   // return Array(Math.round(Math.abs(max - min) / step)).fill(0).map(i => min + i * step)
 }
 
@@ -73,7 +73,7 @@ export function intersection<T> (setA: T[], setB: T[]): T[] {
  */
 export function randomFrom<T> (arr: T[]): T {
   if (!arr.length) return null
-  return arr[randomInt(0, arr.length)]
+  return arr[randomInt(0, arr.length - 1)]
 }
 
 // Shuffle an array in place

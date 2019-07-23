@@ -25,6 +25,7 @@ export interface KenKenOptions {
   seed?: number
   groupingRatio?: number
   operations?: MathOperators[]
+  groupSizeConstraints?: {[key: number]: {min: number, max: number}}
 }
 
 export interface CanvasRenderOptions {

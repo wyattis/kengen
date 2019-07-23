@@ -6,15 +6,25 @@ import { GridGraph } from './GridGraph'
 
 export class KenKenGenerator {
 
+  static defaultSize = 4
   static defaultOptions = {
-    size: 4,
+    size: KenKenGenerator.defaultSize,
     operations: [MathOperators.ADDITION, MathOperators.SUBTRACTION],
     maxSingleCells: 2,
-    groupingRatio: 0.5
+    groupingRatio: 0.5,
+    groupSizeConstraints: {}
   }
 
   static generate (opts: KenKenOptions = {}): KenKen {
     opts = Object.assign({}, KenKenGenerator.defaultOptions, opts)
+
+    opts.groupSizeConstraints = Object.assign({}, {
+      1: { min: 0, max: opts.size - 2 },
+      2: { min: 1, max: opts.size * opts.size },
+      3: { min: 1, max: opts.size - 2 },
+      4: { min: 0, max: opts.size - 3 },
+      5: { min: 0, max: 2 }
+    })
 
     // Set the RNG seed
     const seed = opts.seed || randomInt(1, Math.pow(2, 32))
@@ -166,13 +176,6 @@ export class KenKenGenerator {
   static makeSpacialGroups (cells: number[], opts: KenKenOptions): number[][] {
     const maxGroupSize = opts.size > 5 ? 5 : 4
     const groupMap: Map<number, number> = new Map(range(0, cells.length).map((o, i) => [i, i]))
-    const groupSizeConstraints: {[key: number]: {min: number, max: number}} = {
-      1: { min: 1, max: opts.size - 2 },
-      2: { min: 1, max: opts.size * opts.size },
-      3: { min: 1, max: opts.size },
-      4: { min: 0, max: opts.size - 1 },
-      5: { min: 0, max: 2 }
-    }
 
     // Make our spacial grid to simplify checking of boundaries and neighbors
     const grid: GridGraph<number> = new GridGraph({ width: opts.size, height: opts.size })
@@ -201,9 +204,9 @@ export class KenKenGenerator {
 
         if (joinedGroupSize > maxGroupSize) continue
         const groupCounts = KenKenGenerator.getSizeDistribution(groupMap)
-        const groupAConstraints = groupSizeConstraints[groupSizeA]
-        const groupBConstraints = groupSizeConstraints[groupSizeB]
-        const joinedConstraints = groupSizeConstraints[joinedGroupSize]
+        const groupAConstraints = opts.groupSizeConstraints[groupSizeA]
+        const groupBConstraints = opts.groupSizeConstraints[groupSizeB]
+        const joinedConstraints = opts.groupSizeConstraints[joinedGroupSize]
         const groupACount = groupCounts[groupSizeA]
         const groupBCount = groupCounts[groupSizeB]
         const joinedCount = groupCounts[joinedGroupSize]
