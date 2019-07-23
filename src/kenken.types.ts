@@ -23,6 +23,7 @@ export interface KenKenOptions {
   maxSingleCells?: number
   size?: number
   seed?: number
+  groupingRatio?: number
   operations?: MathOperators[]
 }
 

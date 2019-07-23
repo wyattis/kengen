@@ -4,7 +4,11 @@ import { Rectangle } from './Rectangle'
 export class GridGraph<T> {
 
   private nodes: SpaceQuad<T>[] = []
-  private bounds: Rectangle = new Rectangle(0, 0, 0, 0)
+  private bounds: Rectangle
+
+  constructor (b: {width: number, height: number}) {
+    this.bounds = new Rectangle(0, 0, b.width, b.height)
+  }
 
   has (x: number, y: number): boolean {
     return this.get(x, y) !== null
@@ -14,7 +18,7 @@ export class GridGraph<T> {
     return this.nodes.find(n => n.x === x && n.y === y)
   }
 
-  add (x: number, y: number, data: T) {
+  add (x: number, y: number, data: T): SpaceQuad<T> {
     const node: SpaceQuad<T> = {
       x, y, data,
       top: null,
@@ -22,7 +26,6 @@ export class GridGraph<T> {
       right: null,
       left: null
     }
-    this.bounds.extend(x, y)
     this.nodes.push(node)
     const leftNode = this.get(x - 1, y)
     const rightNode = this.get(x + 1, y)
@@ -43,6 +46,41 @@ export class GridGraph<T> {
     if (bottomNode) {
       node.bottom = bottomNode
       bottomNode.top = node
+    }
+    return node
+  }
+
+  toString (): string {
+    let s = ''
+    for (let y = 0; y < this.bounds.height; y++) {
+      let row = ['', '', '']
+      for (let x = 0; x < this.bounds.width; x++) {
+        const node = this.get(x, y)
+        if (!node) {
+          row = row.map(r => r + '   ')
+        } else {
+          row[0] += ` ${node.top ? 'X' : ' '} `
+          row[1] += `${node.left ? 'X' : ' '}X${node.right ? 'X' : ' '}`
+          row[2] += ` ${node.bottom ? 'X' : ' '} `
+        }
+        row = row.map(r => r + ' ')
+      }
+      s += row.join('\n') + '\n'
+    }
+    return s
+  }
+
+  [Symbol.iterator] () {
+    let i = 0
+    const nodes = this.nodes
+    return {
+      next () {
+        i++
+        return {
+          value: nodes[i - 1],
+          done: i === nodes.length - 1
+        }
+      }
     }
   }
 

@@ -87,7 +87,6 @@ export class Renderer {
         col: p.x,
         row: p.y
       }, renderOpts))
-      console.log(group.result, group.cells, edges)
       Renderer.drawPolygon(ctx, edges)
     }
 
@@ -119,7 +118,7 @@ export class Renderer {
   }
 
   static getGroupEdges (groupCells: number[], size: number): Point[] {
-    const grid: GridGraph<number> = new GridGraph()
+    const grid: GridGraph<number> = new GridGraph({ width: size, height: size })
 
     for (const cell of groupCells) {
       const { row, col } = KenKenGenerator.getCoords(cell, size)

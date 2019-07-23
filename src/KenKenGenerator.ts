@@ -1,20 +1,16 @@
-import { intersection, randomFrom, randomInt, range, setSeed, shuffle } from './M'
-import { KenKen, KenKenOptions, MathGroup, MathOperators } from './kenken.types'
-import { Queue } from './Queue'
+import { intersection, random, randomFrom, randomInt, range, setSeed, shuffle } from './M'
+import { Direction, KenKen, KenKenOptions, MathGroup, MathOperators, Point, SpaceQuad } from './kenken.types'
+import { GridGraph } from './GridGraph'
 
 // Shapes represented as a 2d binary grid
-const shapes2: number[][][] = [[[1]], [[1, 1]]]
-const shapes3 = shapes2.concat([[[1, 1, 1]], [[1, 1], [1, 0]], [[1, 1], [1, 1]]])
-const shapes4 = shapes3.concat([[[1, 1, 1, 1]], [[1, 1, 1], [1, 0, 0]], [[1, 1, 1], [0, 0, 1]], [[1, 1, 1], [0, 1, 0]], [[1, 1, 1], [1, 0, 1]]])
-const shapes5 = shapes4.concat([[[1, 1, 0], [0, 1, 1]], [[0, 1, 1], [1, 1, 0]]])
-const shapes6 = shapes5.concat([])
 
 export class KenKenGenerator {
 
   static defaultOptions = {
     size: 4,
     operations: [MathOperators.ADDITION, MathOperators.SUBTRACTION],
-    maxSingleCells: 2
+    maxSingleCells: 2,
+    groupingRatio: 0.5
   }
 
   static generate (opts: KenKenOptions = {}): KenKen {
@@ -26,11 +22,9 @@ export class KenKenGenerator {
 
     // Fill the cells randomly while satisfying row and column constraints
     const cells = KenKenGenerator.randomizeCells(opts)
-    console.log('cells', cells)
 
     // Make the math group spacial arrangement
     const math = KenKenGenerator.makeMath(cells, opts)
-    console.log('math', math)
 
     return {
       size: opts.size,
@@ -57,7 +51,6 @@ export class KenKenGenerator {
       const candidate = randomFrom(candidates)
       const colIndex = colQueue[col].indexOf(candidate)
       const rowIndex = rowQueue[row].indexOf(candidate)
-      // console.log(i, row, col, colIndex, rowIndex, 'candidate:', candidate, rowQueue[row], colQueue[col])
       rowQueue[row].splice(rowIndex, 1)
       colQueue[col].splice(colIndex, 1)
       cells.push(candidate)
@@ -68,14 +61,19 @@ export class KenKenGenerator {
   static makeMath (cells: number[], opts: KenKenOptions): MathGroup[] {
     const groups: MathGroup[] = []
     const spacialGroups: number[][] = KenKenGenerator.makeSpacialGroups(cells, opts)
-    console.log('spacial groups', spacialGroups)
 
     // Calculate the math operations
     for (const sGroup of spacialGroups) {
       const vals = sGroup.map(i => cells[i])
       vals.sort()
+      let validOperations: MathOperators[]
+      if (vals.length < 3) {
+        validOperations = intersection(opts.operations, Object.values(MathOperators))
+      } else {
+        validOperations = intersection(opts.operations, [MathOperators.ADDITION, MathOperators.MULTIPLICATION])
+      }
       const group: MathGroup = {
-        operation: randomFrom(opts.operations),
+        operation: randomFrom(validOperations),
         cells: sGroup,
         result: 0
       }
@@ -84,18 +82,17 @@ export class KenKenGenerator {
           group.result = vals.reduce((s, c) => s + c, 0)
           break
         case MathOperators.SUBTRACTION:
-          group.result = vals.reduce((s, c) => s - c, 0)
+          group.result = vals.reduce((s, c) => Math.max(s, c) - Math.min(s, c), 0)
           break
         case MathOperators.MULTIPLICATION:
           group.result = vals.reduce((s, c) => s * c, 1)
           break
         case MathOperators.DIVISION:
-          group.result = vals.reduce((s, c) => s / c, 1)
+          group.result = vals.reduce((s, c) => Math.max(s, c) / Math.min(s, c), 1)
           break
       }
       groups.push(group)
     }
-    console.log('math groups', groups)
     return groups
   }
 
@@ -106,100 +103,122 @@ export class KenKenGenerator {
     }
   }
 
-  static getShapeOptions (opts: KenKenOptions): number[][][] {
-    let shapes
-    switch (opts.size) {
-      case 1:
-        throw Error('KenKen must be at least 2x2')
-      case 2:
-        shapes = shapes2
-        break
-      case 3:
-        shapes = shapes3
-        break
-      case 4:
-        shapes = shapes4
-        break
-      case 5:
-        shapes = shapes5
-        break
-      default:
-        shapes = shapes6
+  static groupSize (groupIds: number[], groupMap: Map<number, number>): number {
+    let size = 0
+    for (const id of groupIds) {
+      for (const [key, value] of groupMap) {
+        if (value === id) {
+          size++
+        }
+      }
     }
-    // TODO: Transpose shapes for all possible rotations
-    return shapes
+    return size
+  }
+
+  static mergeGroups (nodeA: { data: number }, nodeB: { data: number }, groupMap: Map<number, number>) {
+    const idA = groupMap.get(nodeA.data)
+    const idB = groupMap.get(nodeB.data)
+    for (const [key, value] of groupMap) {
+      if (value === idB) {
+        groupMap.set(key, idA)
+      }
+    }
+  }
+
+  static getGroup (map: Map<number, number>, key: number): number[] {
+    const group = []
+    const groupId = map.get(key)
+    for (const [key, value] of map) {
+      if (value === groupId) {
+        group.push(key)
+      }
+    }
+    return group
+  }
+
+  static isSameVal<T> (map: Map<T, any>, idA: T, idB: T): boolean {
+    return map.get(idA) === map.get(idB)
+  }
+
+  static getSizeDistribution (map: Map<number, number>): {[key: number]: number} {
+    const uniqueGroups = KenKenGenerator.getUniqueGroups(map)
+    const sizeCount: {[key: number]: number} = {}
+    for (const [key, group] of uniqueGroups) {
+      if (!sizeCount[group.length]) sizeCount[group.length] = 0
+      sizeCount[group.length]++
+    }
+    return sizeCount
+  }
+
+  static getUniqueGroups (map: Map<number, number>): Map<number, number[]> {
+    const uniqueGroups: Map<number, number[]> = new Map()
+    for (const [key, value] of map) {
+      let group = uniqueGroups.get(value)
+      if (!group) {
+        group = []
+        uniqueGroups.set(value, group)
+      }
+      group.push(key)
+    }
+    return uniqueGroups
   }
 
   static makeSpacialGroups (cells: number[], opts: KenKenOptions): number[][] {
-    const availableShapes = KenKenGenerator.getShapeOptions(opts)
-
-    function shapeFits (indices: number[], sieve: Set<number>, size: number): boolean {
-      let positions: {col: number, row: number}[] = []
-      for (const index of indices) {
-        // If the position already belongs to another group or is invalid we return false
-        if (sieve.has(index) || index >= Math.pow(size, 2)) return false
-        const pos = KenKenGenerator.getCoords(index, size)
-        if (!positions.length) {
-          positions.push(pos)
-        } else {
-          if (!positions.find(p => p.col === pos.col || p.row === pos.row)) return false
-        }
-      }
-      return true
+    const maxGroupSize = opts.size > 5 ? 5 : 4
+    const groupMap: Map<number, number> = new Map(range(0, cells.length).map((o, i) => [i, i]))
+    const groupSizeConstraints: {[key: number]: {min: number, max: number}} = {
+      1: { min: 1, max: opts.size - 2 },
+      2: { min: 1, max: opts.size * opts.size },
+      3: { min: 1, max: opts.size },
+      4: { min: 0, max: opts.size - 1 },
+      5: { min: 0, max: 2 }
     }
 
-    function getShapeIndices (shape: number[][], size: number, startIndex: number): number[] {
-      let indices = []
-      for (let row = 0; row < shape.length; row++) {
-        for (let col = 0; col < shape[row].length; col++) {
-          if (!shape[row][col]) continue
-          const index = startIndex + row * size + col
-          indices.push(index)
-        }
-      }
-      return indices
-    }
-
-    const groups: number[][] = []
-    const cellSieve: Set<number> = new Set()
-    let numSingleCellGroups = 0
+    // Make our spacial grid to simplify checking of boundaries and neighbors
+    const grid: GridGraph<number> = new GridGraph({ width: opts.size, height: opts.size })
+    const points: Point[] = []
     for (let i = 0; i < cells.length; i++) {
-      // Skip cells that have already been added to a group
-      if (cellSieve.has(i)) continue
-
-      shuffle(availableShapes)
-      let shapesQueue
-      // We filter out the single cell group once the maximum number has been exceeded
-      if (numSingleCellGroups >= 2) {
-        shapesQueue = new Queue(availableShapes.filter(s => !(s.length === 1 && s[0].length === 1)))
-      } else {
-        shapesQueue = new Queue(availableShapes)
-      }
-      let candidate
-      let shapeIndices
-      do {
-        candidate = shapesQueue.next()
-        shapeIndices = getShapeIndices(candidate, opts.size, i)
-      } while (candidate && !shapeFits(shapeIndices, cellSieve, opts.size))
-
-      if (!candidate || shapeIndices.length === 0) {
-        console.log('candidate', candidate, shapeIndices)
-        throw Error('Unable to find shape to fit this position')
-      }
-
-      // Add all cells in this shape to the sieve
-      for (const index of shapeIndices) {
-        cellSieve.add(index)
-      }
-
-      if (shapeIndices.length === 1) {
-        numSingleCellGroups++
-      }
-      groups.push(shapeIndices)
-
+      const { col, row } = KenKenGenerator.getCoords(i, opts.size)
+      grid.add(col, row, i)
+      points.push({ x: col, y: row })
     }
 
-    return groups
+    // Randomly create groups based on probability of joining cells
+    shuffle(points)
+    for (const p of points) {
+      const cell = grid.get(p.x, p.y)
+      const directions = shuffle([Direction.RIGHT, Direction.LEFT, Direction.UP, Direction.DOWN])
+
+      for (const dir of directions) {
+        const rVal = random()
+        if (rVal > opts.groupingRatio) continue
+        const neighbor = GridGraph.getCellInDirection(dir, cell)
+
+        if (!neighbor) continue
+        const groupSizeA = KenKenGenerator.groupSize([groupMap.get(cell.data)], groupMap)
+        const groupSizeB = KenKenGenerator.groupSize([groupMap.get(neighbor.data)], groupMap)
+        const joinedGroupSize = groupSizeA + groupSizeB
+
+        if (joinedGroupSize > maxGroupSize) continue
+        const groupCounts = KenKenGenerator.getSizeDistribution(groupMap)
+        const groupAConstraints = groupSizeConstraints[groupSizeA]
+        const groupBConstraints = groupSizeConstraints[groupSizeB]
+        const joinedConstraints = groupSizeConstraints[joinedGroupSize]
+        const groupACount = groupCounts[groupSizeA]
+        const groupBCount = groupCounts[groupSizeB]
+        const joinedCount = groupCounts[joinedGroupSize]
+        // Check if increasing the group size of groupA or B will lead to ruining our group size quotas
+        if (groupACount > groupAConstraints.min &&
+          groupBCount > groupBConstraints.min &&
+          (!joinedCount || !joinedConstraints || joinedCount < joinedConstraints.max)) {
+          KenKenGenerator.mergeGroups(cell, neighbor, groupMap)
+        }
+      }
+    }
+
+    // Convert the groupMap to an array of spacial groups
+    const groupMergeMap = KenKenGenerator.getUniqueGroups(groupMap)
+    return Array.from(groupMergeMap.values())
   }
 
 }

@@ -28,7 +28,7 @@ export function clearSeed () {
  * @param min
  * @param max
  */
-export function random (min: number, max: number): number {
+export function random (min: number = 0, max: number = 1): number {
   return rng() * (max - min) + min
 }
 
@@ -86,7 +86,7 @@ export function shuffle<T> (arr: T[]): T[] {
   while (m) {
 
     // Pick a remaining element…
-    i = Math.floor(Math.random() * m--)
+    i = Math.floor(rng() * m--)
 
     // And swap it with the current element.
     t = arr[m]
