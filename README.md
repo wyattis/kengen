@@ -1,7 +1,7 @@
 # KenKen
 [KenKen](https://en.wikipedia.org/wiki/KenKen) are mathematical puzzles similar to [Sudoku](). 
-They must include exactly one of each number in each column and row while also generating correct 
-solutions to the math.
+They must include exactly one of each number in each column and row while also solving the simple math
+problems arranged throughout the board.
 
 This library generates KenKen puzzles of any size and is capable of rendering them as images.
 
