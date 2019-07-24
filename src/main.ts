@@ -7,8 +7,8 @@ import { range } from './M'
 
 const outputDir = path.join(__dirname, '../data')
 
-for (const size of [4, 5, 6]) {
-  for (const i of range(1, 10)) {
+for (const size of range(3, 15)) {
+  for (const i of range(1, 2)) {
     const kenKen = KenKenGenerator.generate({ size, operations: [MathOperators.ADDITION, MathOperators.SUBTRACTION], seed: i, maxSingleCells: Math.floor(size / 2) })
     const canvas = Renderer.makeCanvas(500, 500)
     const fileName = path.join(outputDir, `${size}x${size}-kenken-${i}`)

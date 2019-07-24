@@ -12,6 +12,7 @@ export class KenKenGenerator {
     operations: [MathOperators.ADDITION, MathOperators.SUBTRACTION],
     maxSingleCells: 2,
     groupingRatio: 0.5,
+    maxLayoutAttempts: 50,
     groupSizeConstraints: {}
   }
 
@@ -45,8 +46,8 @@ export class KenKenGenerator {
     }
   }
 
-  static randomizeCells (opts: KenKenOptions, maximumAttempts = 30, attempts = 0): number[] {
-    if (attempts > maximumAttempts) throw Error('Not able to find cells that fit')
+  static randomizeCells (opts: KenKenOptions, attempts = 0): number[] {
+    if (attempts > opts.maxLayoutAttempts) throw Error('Not able to find cells that fit')
     const numCells = Math.pow(opts.size, 2)
     const rowQueue: number[][] = Array.from({ length: opts.size }, (_, i) => range(1, opts.size + 1))
     const colQueue: number[][] = Array.from({ length: opts.size }, (_, i) => range(1, opts.size + 1))
@@ -56,7 +57,7 @@ export class KenKenGenerator {
       const candidates = intersection(rowQueue[row], colQueue[col])
       if (candidates.length === 0) {
         console.log('retrying', attempts)
-        return KenKenGenerator.randomizeCells(opts, maximumAttempts, attempts + 1)
+        return KenKenGenerator.randomizeCells(opts, attempts + 1)
       }
       const candidate = randomFrom(candidates)
       const colIndex = colQueue[col].indexOf(candidate)
