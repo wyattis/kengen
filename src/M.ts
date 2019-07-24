@@ -76,7 +76,10 @@ export function randomFrom<T> (arr: T[]): T {
   return arr[randomInt(0, arr.length - 1)]
 }
 
-// Shuffle an array in place
+/**
+ * Shuffle an array in place
+ * @param arr
+ */
 export function shuffle<T> (arr: T[]): T[] {
   let m = arr.length
   let t
@@ -95,4 +98,28 @@ export function shuffle<T> (arr: T[]): T[] {
   }
 
   return arr
+}
+
+export function* permutationsOf<T> (arr: T[]): IterableIterator<T[]> {
+  const permutation = arr.slice(0)
+  const c = Array(arr.length).fill(0)
+  let i = 1
+  let k
+  let p
+
+  yield permutation.slice()
+  while (i < arr.length) {
+    if (c[i] < i) {
+      k = i % 2 && c[i]
+      p = permutation[i]
+      permutation[i] = permutation[k]
+      permutation[k] = p
+      ++c[i]
+      i = 1
+      yield permutation.slice()
+    } else {
+      c[i] = 0
+      ++i
+    }
+  }
 }

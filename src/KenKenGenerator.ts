@@ -1,4 +1,4 @@
-import { intersection, random, randomFrom, randomInt, range, setSeed, shuffle } from './M'
+import { intersection, permutationsOf, random, randomFrom, randomInt, range, setSeed, shuffle } from './M'
 import { Direction, KenKen, KenKenOptions, MathGroup, MathOperators, Point, SpaceQuad } from './kenken.types'
 import { GridGraph } from './GridGraph'
 
@@ -46,27 +46,36 @@ export class KenKenGenerator {
     }
   }
 
-  static randomizeCells (opts: KenKenOptions, attempts = 0): number[] {
-    if (attempts > opts.maxLayoutAttempts) throw Error('Not able to find cells that fit')
-    const numCells = Math.pow(opts.size, 2)
-    const rowQueue: number[][] = Array.from({ length: opts.size }, (_, i) => range(1, opts.size + 1))
-    const colQueue: number[][] = Array.from({ length: opts.size }, (_, i) => range(1, opts.size + 1))
-    const cells: number[] = []
-    for (let i = 0; i < numCells; i++) {
-      const { col, row } = KenKenGenerator.getCoords(i, opts.size)
-      const candidates = intersection(rowQueue[row], colQueue[col])
-      if (candidates.length === 0) {
-        console.log('retrying', attempts)
-        return KenKenGenerator.randomizeCells(opts, attempts + 1)
+  static columnConflicts (cols: number[][], row: number[]): {col: number, val: number}[] {
+    if (!cols.length) return []
+    const conflicts: {col: number, val: number}[] = []
+    for (let c = 0; c < row.length; c++) {
+      if (cols[c].includes(row[c])) {
+        conflicts.push({
+          col: c,
+          val: row[c]
+        })
       }
-      const candidate = randomFrom(candidates)
-      const colIndex = colQueue[col].indexOf(candidate)
-      const rowIndex = rowQueue[row].indexOf(candidate)
-      rowQueue[row].splice(rowIndex, 1)
-      colQueue[col].splice(colIndex, 1)
-      cells.push(candidate)
     }
-    return cells
+    return conflicts
+  }
+
+  static randomizeCells (opts: KenKenOptions, attempts = 0): number[] {
+    // Create initial layout
+    const rows: number[][] = []
+    const cols: number[][] = Array(opts.size).fill(0).map(v => [])
+    for (let i = 0; i < opts.size; i++) {
+      let row
+      for (row of permutationsOf(shuffle(range(1, opts.size + 1)))) {
+        const conflicts = KenKenGenerator.columnConflicts(cols, row)
+        if (conflicts.length === 0) break
+      }
+      rows.push(row)
+      for (let c = 0; c < row.length; c++) {
+        cols[c].push(row[c])
+      }
+    }
+    return rows.reduce((agg, row) => agg.concat(row), [])
   }
 
   static makeMath (cells: number[], opts: KenKenOptions): MathGroup[] {
