@@ -78,6 +78,21 @@ export class KenKenGenerator {
     return rows.reduce((agg, row) => agg.concat(row), [])
   }
 
+  static getIndexFromCoords (coords: {row: number, col: number}, size: number): number {
+    return coords.row * size + coords.col
+  }
+
+  static cellsToRowsCols (cells: number[], size: number): {cols: number[][], rows: number[][]} {
+    const cols: number[][] = Array(size).fill(0).map(c => [])
+    const rows: number[][] = Array(size).fill(0).map(c => [])
+    for (let i = 0; i < cells.length; i++) {
+      const { col, row } = KenKenGenerator.getCoords(i, size)
+      cols[col][row] = cells[i]
+      rows[row][col] = cells[i]
+    }
+    return { cols, rows }
+  }
+
   static makeMath (cells: number[], opts: KenKenOptions): MathGroup[] {
     const groups: MathGroup[] = []
     const spacialGroups: number[][] = KenKenGenerator.makeSpacialGroups(cells, opts)

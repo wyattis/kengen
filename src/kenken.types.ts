@@ -32,6 +32,7 @@ export interface KenKenOptions {
 export interface CanvasRenderOptions {
   cellSize?: number
   thickness?: number
+  groupThickness?: number
   cellPadding?: number
   solutionFont?: string
   mathFont?: string

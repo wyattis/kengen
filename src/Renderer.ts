@@ -18,6 +18,7 @@ export class Renderer {
     solutionFont: '30px Arial',
     mathFont: '20px Arial',
     thickness: 1,
+    groupThickness: 5,
     withSolution: false,
     lineJoin: 'round'
   }
@@ -35,26 +36,28 @@ export class Renderer {
 
   static getCellCoords (o: {col: number, row: number}, renderOpts: CanvasRenderOptions): {x: number, y: number} {
     return {
-      x: o.col * renderOpts.cellSize + (o.col + 1) * renderOpts.thickness,
-      y: o.row * renderOpts.cellSize + (o.row + 1) * renderOpts.thickness
+      x: Math.ceil(o.col * renderOpts.cellSize + o.col * renderOpts.thickness + renderOpts.groupThickness / 2),
+      y: Math.ceil(o.row * renderOpts.cellSize + o.row * renderOpts.thickness + renderOpts.groupThickness / 2)
     }
   }
 
   static drawPolygon (ctx: CanvasRenderingContext2D, poly: Point[]) {
+    ctx.beginPath()
     ctx.moveTo(poly[0].x, poly[0].y)
     for (let i = 1; i < poly.length; i++) {
       ctx.lineTo(poly[i].x, poly[i].y)
     }
+    ctx.closePath()
     ctx.stroke()
   }
 
   static renderCanvas (kenKen: KenKen, ctx: CanvasRenderingContext2D, renderOpts: CanvasRenderOptions = {}): void {
     renderOpts = Object.assign({}, Renderer.defaultRenderOptions, renderOpts)
     const { x: width, y: height } = Renderer.getCellCoords({ col: kenKen.size , row: kenKen.size }, renderOpts)
-    ctx.canvas.width = width
-    ctx.canvas.height = height
+    ctx.canvas.width = Math.ceil(width + renderOpts.groupThickness / 2)
+    ctx.canvas.height = Math.ceil(height + renderOpts.groupThickness / 2)
     ctx.fillStyle = 'white'
-    ctx.fillRect(0, 0, width, height)
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     ctx.fillStyle = 'black'
     ctx.textAlign = 'start'
     ctx.textBaseline = 'top'
@@ -71,7 +74,7 @@ export class Renderer {
     }
 
     ctx.strokeStyle = 'black'
-    ctx.lineWidth = renderOpts.thickness * 2
+    ctx.lineWidth = renderOpts.groupThickness
     // Draw the outside border first
     ctx.strokeRect(0, 0, width, height)
 

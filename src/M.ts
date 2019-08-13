@@ -123,3 +123,10 @@ export function* permutationsOf<T> (arr: T[]): IterableIterator<T[]> {
     }
   }
 }
+
+export function swap<T> (arr: T[], indexA: number, indexB: number): T[] {
+  const v = arr[indexA]
+  arr[indexA] = arr[indexB]
+  arr[indexB] = v
+  return arr
+}
