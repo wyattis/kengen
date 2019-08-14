@@ -124,6 +124,19 @@ export function* permutationsOf<T> (arr: T[]): IterableIterator<T[]> {
   }
 }
 
+export function* combinationsOf<T> (arr: T[], n: number): IterableIterator<T[]> {
+  for (let i = 0; i < arr.length; i++) {
+    if (n === 1) {
+      yield [arr[i]]
+    } else {
+      let remaining = combinationsOf(arr.slice(i + 1, arr.length), n - 1)
+      for (let next of remaining) {
+        yield [arr[i], ...next]
+      }
+    }
+  }
+}
+
 export function swap<T> (arr: T[], indexA: number, indexB: number): T[] {
   const v = arr[indexA]
   arr[indexA] = arr[indexB]
