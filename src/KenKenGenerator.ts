@@ -1,5 +1,16 @@
-import { intersection, permutationsOf, random, randomFrom, randomInt, range, setSeed, shuffle } from './M'
-import { Direction, KenKen, KenKenOptions, MathGroup, MathOperators, Point, SpaceQuad } from './kenken.types'
+import {
+  greatestCommonDivisor,
+  intersection,
+  lowestCommonMultiple,
+  permutationsOf,
+  random,
+  randomFrom,
+  randomInt,
+  range,
+  setSeed,
+  shuffle
+} from './M'
+import { Direction, KenKen, KenKenOptions, MathGroup, MathOperators, Point } from './kenken.types'
 import { GridGraph } from './GridGraph'
 
 // Shapes represented as a 2d binary grid
@@ -66,7 +77,7 @@ export class KenKenGenerator {
     const cols: number[][] = Array(opts.size).fill(0).map(v => [])
     for (let i = 0; i < opts.size; i++) {
       let row
-      for (row of permutationsOf(shuffle(range(1, opts.size + 1)))) {
+      for (row of shuffle(Array.from(permutationsOf(range(1, opts.size + 1))))) {
         const conflicts = KenKenGenerator.columnConflicts(cols, row)
         if (conflicts.length === 0) break
       }
@@ -75,7 +86,7 @@ export class KenKenGenerator {
         cols[c].push(row[c])
       }
     }
-    return rows.reduce((agg, row) => agg.concat(row), [])
+    return shuffle(rows).reduce((agg, row) => agg.concat(row), [])
   }
 
   static getIndexFromCoords (coords: {row: number, col: number}, size: number): number {
@@ -105,7 +116,7 @@ export class KenKenGenerator {
       if (vals.length < 3) {
         validOperations = intersection(opts.operations, Object.values(MathOperators))
       } else {
-        validOperations = intersection(opts.operations, [MathOperators.ADDITION, MathOperators.MULTIPLICATION])
+        validOperations = intersection(opts.operations, [MathOperators.ADDITION, MathOperators.MULTIPLICATION, MathOperators.MINIMUM, MathOperators.MAXIMUM])
       }
       const group: MathGroup = {
         operation: randomFrom(validOperations),
@@ -124,6 +135,21 @@ export class KenKenGenerator {
           break
         case MathOperators.DIVISION:
           group.result = vals.reduce((s, c) => Math.max(s, c) / Math.min(s, c), 1)
+          break
+        case MathOperators.MAXIMUM:
+          group.result = Math.max(...vals)
+          break
+        case MathOperators.MINIMUM:
+          group.result = Math.min(...vals)
+          break
+        case MathOperators.MODULUS:
+          group.result = Math.max(...vals) % Math.min(...vals)
+          break
+        case MathOperators.LOWEST_COMMON_MULTIPLE:
+          group.result = lowestCommonMultiple(vals[0], vals[1])
+          break
+        case MathOperators.GREATEST_COMMON_DIVISOR:
+          group.result = greatestCommonDivisor(vals[0], vals[1])
           break
       }
       groups.push(group)
@@ -158,21 +184,6 @@ export class KenKenGenerator {
         groupMap.set(key, idA)
       }
     }
-  }
-
-  static getGroup (map: Map<number, number>, key: number): number[] {
-    const group = []
-    const groupId = map.get(key)
-    for (const [key, value] of map) {
-      if (value === groupId) {
-        group.push(key)
-      }
-    }
-    return group
-  }
-
-  static isSameVal<T> (map: Map<T, any>, idA: T, idB: T): boolean {
-    return map.get(idA) === map.get(idB)
   }
 
   static getSizeDistribution (map: Map<number, number>): {[key: number]: number} {

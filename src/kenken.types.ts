@@ -2,7 +2,12 @@ export enum MathOperators {
   ADDITION = 'A',
   SUBTRACTION = 'S',
   MULTIPLICATION = 'M',
-  DIVISION = 'D'
+  DIVISION = 'D',
+  GREATEST_COMMON_DIVISOR = 'GCD',
+  LOWEST_COMMON_MULTIPLE = 'LCM',
+  MODULUS = 'MOD',
+  MINIMUM = 'MIN',
+  MAXIMUM = 'MAX'
 }
 
 export interface MathGroup {
@@ -32,6 +37,11 @@ export interface KenKenOptions {
 export interface CanvasRenderOptions {
   cellSize?: number
   thickness?: number
+  backgroundColor?: string
+  solutionFontColor?: string
+  clueFontColor?: string
+  thinLineColor?: string
+  groupLineColor?: string
   groupThickness?: number
   cellPadding?: number
   solutionFont?: string

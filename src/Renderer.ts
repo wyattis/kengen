@@ -7,7 +7,12 @@ const OpStrings = {
   [MathOperators.ADDITION]: '+',
   [MathOperators.SUBTRACTION]: '-',
   [MathOperators.DIVISION]: '\u00F7',
-  [MathOperators.MULTIPLICATION]: 'x'
+  [MathOperators.MULTIPLICATION]: 'x',
+  [MathOperators.MODULUS]: 'mod',
+  [MathOperators.LOWEST_COMMON_MULTIPLE]: 'LCM',
+  [MathOperators.GREATEST_COMMON_DIVISOR]: 'GCD',
+  [MathOperators.MINIMUM]: 'min',
+  [MathOperators.MAXIMUM]: 'max'
 }
 
 export class Renderer {
@@ -17,6 +22,11 @@ export class Renderer {
     cellPadding: 5,
     solutionFont: '30px Arial',
     mathFont: '20px Arial',
+    backgroundColor: 'white',
+    thinLineColor: 'grey',
+    groupLineColor: 'black',
+    clueFontColor: 'black',
+    solutionFontColor: 'black',
     thickness: 1,
     groupThickness: 5,
     withSolution: false,
@@ -51,17 +61,20 @@ export class Renderer {
     ctx.stroke()
   }
 
+  static getRenderOpts (opts: CanvasRenderOptions = {}) {
+    return Object.assign({}, Renderer.defaultRenderOptions, opts)
+  }
+
   static renderCanvas (kenKen: KenKen, ctx: CanvasRenderingContext2D, renderOpts: CanvasRenderOptions = {}): void {
-    renderOpts = Object.assign({}, Renderer.defaultRenderOptions, renderOpts)
+    renderOpts = Renderer.getRenderOpts(renderOpts)
     const { x: width, y: height } = Renderer.getCellCoords({ col: kenKen.size , row: kenKen.size }, renderOpts)
     ctx.canvas.width = Math.ceil(width + renderOpts.groupThickness / 2)
     ctx.canvas.height = Math.ceil(height + renderOpts.groupThickness / 2)
-    ctx.fillStyle = 'white'
+    ctx.fillStyle = renderOpts.backgroundColor
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-    ctx.fillStyle = 'black'
     ctx.textAlign = 'start'
     ctx.textBaseline = 'top'
-    ctx.strokeStyle = 'grey'
+    ctx.strokeStyle = renderOpts.thinLineColor
     ctx.lineWidth = renderOpts.thickness
     ctx.lineJoin = renderOpts.lineJoin
 
@@ -73,13 +86,14 @@ export class Renderer {
       ctx.strokeRect(x, y, x2 - x, y2 - y)
     }
 
-    ctx.strokeStyle = 'black'
+    ctx.strokeStyle = renderOpts.groupLineColor
     ctx.lineWidth = renderOpts.groupThickness
     // Draw the outside border first
     ctx.strokeRect(0, 0, width, height)
 
     // Draw the each group
     ctx.font = renderOpts.mathFont
+    ctx.fillStyle = renderOpts.clueFontColor
     for (const group of kenKen.math) {
       // Draw the operation text
       const operationCellIndex = Math.min(...group.cells)
@@ -95,6 +109,7 @@ export class Renderer {
 
     // Draw the solution
     ctx.font = renderOpts.solutionFont
+    ctx.fillStyle = renderOpts.solutionFontColor
     if (renderOpts.withSolution) {
       for (let i = 0; i < kenKen.cells.length; i++) {
         const cell = kenKen.cells[i]

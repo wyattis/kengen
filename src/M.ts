@@ -51,6 +51,10 @@ export function range (min: number, max: number): number[] {
   // return Array(Math.round(Math.abs(max - min) / step)).fill(0).map(i => min + i * step)
 }
 
+export function roundFloat (float: number, digits: number = 2): number {
+  return Math.floor(float * Math.pow(10, digits)) / Math.pow(10, digits)
+}
+
 /**
  * Returns an array of all shared elements between two arrays. Uses referential equality to determine if elements are
  * the same.
@@ -142,4 +146,27 @@ export function swap<T> (arr: T[], indexA: number, indexB: number): T[] {
   arr[indexA] = arr[indexB]
   arr[indexB] = v
   return arr
+}
+
+export function greatestCommonDivisor (numA: number, numB: number): number {
+  numA = Math.abs(numA)
+  numB = Math.abs(numB)
+  if (numA !== Math.floor(numA) || numB !== Math.floor(numB)) {
+    throw new Error('Greatest common divisor can only be found for integers')
+  }
+  while (numB) {
+    const t = numB
+    numB = numA % numB
+    numA = t
+  }
+  return numA
+}
+
+export function lowestCommonMultiple (numA: number, numB: number): number {
+  numA = Math.abs(numA)
+  numB = Math.abs(numB)
+  if (numA !== Math.floor(numA) || numB !== Math.floor(numB)) {
+    throw new Error('Lowest commond multiple can only be found for integers')
+  }
+  return (!numA || !numB) ? 0 : Math.abs((numA * numB) / greatestCommonDivisor(numA, numB))
 }
