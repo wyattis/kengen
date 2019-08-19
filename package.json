@@ -2,9 +2,12 @@
   "name": "ken-ken-generator",
   "version": "0.0.1",
   "description": "Generate KenKen puzzles in a variety of formats.",
-  "main": "dist/main.js",
+  "main": "./dist/main.js",
+  "types": "./dist/main.d.ts",
+  "files": ["dist/**/*"],
   "scripts": {
-    "test": "mocha -r ts-node/register test/**/*.spec.ts"
+    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "prepare": "tsc"
   },
   "keywords": [
     "KenKen",
