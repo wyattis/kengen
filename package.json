@@ -7,7 +7,7 @@
   "files": ["dist/**/*"],
   "scripts": {
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
-    "prepare": "tsc"
+    "prepare": "tsc && ts-node ./make-examples.ts"
   },
   "keywords": [
     "KenKen",

@@ -65,6 +65,25 @@ export class Renderer {
     return Object.assign({}, Renderer.defaultRenderOptions, opts)
   }
 
+  /**
+   * Renders a KenKen to the provided canvas context. This method WILL clear the canvas before rendering.
+   * @param kenKen - The KenKen puzzle to render
+   * @param ctx - The canvas to render to
+   * @param renderOpts - The provided canvas render options
+   * @param renderOpts.cellSize: 100
+   * @param renderOpts.cellPadding: 5
+   * @param renderOpts.solutionFont: '30px Arial'
+   * @param renderOpts.mathFont: '20px Arial'
+   * @param renderOpts.backgroundColor: 'white'
+   * @param renderOpts.thinLineColor: 'grey'
+   * @param renderOpts.groupLineColor: 'black'
+   * @param renderOpts.clueFontColor: 'black'
+   * @param renderOpts.solutionFontColor: 'black'
+   * @param renderOpts.thickness: 1
+   * @param renderOpts.groupThickness: 5
+   * @param renderOpts.withSolution: false
+   * @param renderOpts.lineJoin: 'round'
+   */
   static renderCanvas (kenKen: KenKen, ctx: CanvasRenderingContext2D, renderOpts: CanvasRenderOptions = {}): void {
     renderOpts = Renderer.getRenderOpts(renderOpts)
     const { x: width, y: height } = Renderer.getCellCoords({ col: kenKen.size , row: kenKen.size }, renderOpts)

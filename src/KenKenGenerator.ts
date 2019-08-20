@@ -27,6 +27,10 @@ export class KenKenGenerator {
     groupSizeConstraints: {}
   }
 
+  /**
+   * Returns an object representation of a KenKen puzzle
+   * @param opts - Generator options
+   */
   static generate (opts: KenKenOptions = {}): KenKen {
     opts = Object.assign({}, KenKenGenerator.defaultOptions, opts)
 
