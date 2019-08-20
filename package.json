@@ -1,17 +1,21 @@
 {
-  "name": "ken-ken-generator",
+  "name": "kengen",
   "version": "0.0.1",
-  "description": "Generate KenKen puzzles in a variety of formats.",
+  "description": "Customizable and seedable KenKen generator and renderer",
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
-  "files": ["dist/**/*"],
+  "files": ["dist/**/*", "static/**/*"],
+  "repository": "github:wyattis/ken-ken",
   "scripts": {
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
-    "prepare": "tsc && ts-node ./make-examples.ts"
+    "prepare": "tsc"
   },
   "keywords": [
     "KenKen",
-    "generator"
+    "generator",
+    "renderer",
+    "puzzle",
+    "sudoku"
   ],
   "author": "wyattis",
   "license": "MIT",
@@ -21,15 +25,14 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.6.8",
     "chai": "^4.2.0",
+    "mkdirp": "^0.5.1",
     "mocha": "^6.2.0",
-    "nodemon": "^1.19.1",
     "ts-node": "^8.3.0",
     "tslint": "^5.18.0",
     "tslint-config-standard": "^8.0.1",
     "typescript": "^3.5.3"
   },
   "dependencies": {
-    "canvas": "^2.5.0",
-    "mkdirp": "^0.5.1"
+    "canvas": "^2.5.0"
   }
 }

@@ -12,7 +12,7 @@ HTMLCanvasElement.
 ## Usage
 #####  Generate a 4x4 KenKen puzzle.
 ```typescript
-import { KenKenGenerator } from 'ken-ken'
+import { KenKenGenerator } from 'kengen'
 
 const puz = KenKenGenerator.generate({ size: 4 })
 ```
@@ -20,7 +20,7 @@ const puz = KenKenGenerator.generate({ size: 4 })
 ##### Generate a 6x6 KenKen puzzle with a specific seed and more math operations
 
 ```typescript
-import { KenKenGenerator, MathOperators } from 'ken-ken'
+import { KenKenGenerator, MathOperators } from 'kengen'
 
 const puz = KenKenGenerator.generate({ 
   size: 6, 
@@ -37,7 +37,7 @@ const puz = KenKenGenerator.generate({
 ##### Render a 7x7 to a PNG
 Uses the [node-canvas](https://www.npmjs.com/package/canvas) library.
 ```typescript
-import { KenKenGenerator, Renderer } from 'ken-ken'
+import { KenKenGenerator, Renderer } from 'kengen'
 import { createCanvas } from 'canvas'
 import * as fs from 'fs'
 
