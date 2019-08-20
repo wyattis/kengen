@@ -5,7 +5,7 @@
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
   "files": ["dist/**/*", "static/**/*"],
-  "repository": "github:wyattis/ken-ken",
+  "repository": "github:wyattis/kengen",
   "scripts": {
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "prepare": "tsc"
