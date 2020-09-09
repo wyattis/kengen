@@ -1,6 +1,6 @@
 {
   "name": "kengen",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Customizable and seedable KenKen generator and renderer",
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
