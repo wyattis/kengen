@@ -39,21 +39,13 @@ export class HTMLRenderer extends BaseRenderer {
         const pB = points[i]
         const dir = this.dirBetweenPoints(pA, pB)
         if (dir === Direction.RIGHT) {
-          const cell = grid[pA.y][pA.x]
-          console.log(dir, pA, pB, 'bt', cell.row, cell.col)
-          cell.class.add('bt')
+          grid[pA.y][pA.x].class.add('bt')
         } else if (dir === Direction.LEFT) {
-          const cell = grid[pA.y - 1][pB.x]
-          console.log(dir, pA, pB, 'bb', cell.row, cell.col)
-          cell.class.add('bb')
+          grid[pA.y - 1][pB.x].class.add('bb')
         } else if (dir === Direction.DOWN) {
-          const cell = grid[pA.y][pA.x - 1]
-          console.log(dir, pA, pB, 'br', cell.row, cell.col)
-          cell.class.add('br')
+          grid[pA.y][pA.x - 1].class.add('br')
         } else {
-          const cell = grid[pB.y][pB.x]
-          console.log(dir, pA, pB, 'bl', cell.row, cell.col)
-          cell.class.add('bl')
+          grid[pB.y][pB.x].class.add('bl')
         }
       }
     }
