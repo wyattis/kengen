@@ -1,0 +1,57 @@
+.row {
+  overflow: auto;
+}
+.cell {
+  position: relative;
+  box-sizing: border-box;
+  width: 100px;
+  height: 100px;
+  text-align: center;
+  line-height: 100px;
+  font-size: 30px;
+  vertical-align: middle;
+  float: left;
+  border-bottom: 1px solid lightgrey;
+  border-right: 1px solid lightgrey;
+}
+.operator {
+  position: absolute;
+  line-height: 10px;
+  font-size: 18px;
+  width: 20px;
+  height: 20px;
+  padding-left: 5px;
+  padding-top: 8px;
+  top: 0;
+  left: 0;
+}
+.cell.br {
+  border-right: 2px solid grey;
+}
+.cell.bt {
+  border-top: 2px solid grey;
+}
+.cell.bl {
+  border-left: 2px solid grey;
+}
+.cell.bb {
+  border-bottom: 2px solid grey;
+}
+.br.bt {
+  border-top-right-radius: 4px;
+}
+.br.bb {
+  border-bottom-right-radius: 4px;
+}
+.bl.bt {
+  border-top-left-radius: 4px;
+}
+.bl.bb {
+  border-bottom-left-radius: 4px;
+}
+.puzzle {
+  /* border: 3px solid grey;
+  display: inline-block; */
+  box-sizing: border-box;
+  overflow: visible;
+}

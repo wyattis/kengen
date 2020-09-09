@@ -51,10 +51,10 @@ export interface CanvasRenderOptions {
 }
 
 export enum Direction {
-  RIGHT,
-  LEFT,
-  DOWN,
-  UP
+  RIGHT = 'right',
+  LEFT = 'left',
+  DOWN = 'down',
+  UP = 'up'
 }
 
 export interface SpaceQuad <T> {

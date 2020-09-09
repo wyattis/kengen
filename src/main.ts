@@ -1,4 +1,5 @@
 export * from './KenKenGenerator'
 export * from './kenken.types'
 export * from './M'
-export * from './Renderer'
+export * from './render/CanvasRenderer'
+export * from './render/HTMLRenderer'

@@ -4,10 +4,14 @@
   "description": "Customizable and seedable KenKen generator and renderer",
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
-  "files": ["dist/**/*", "static/**/*"],
+  "files": [
+    "dist/**/*",
+    "static/**/*"
+  ],
   "repository": "github:wyattis/kengen",
   "scripts": {
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "examples": "npx ts-node make-examples.ts",
     "prepare": "tsc"
   },
   "keywords": [
