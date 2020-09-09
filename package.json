@@ -1,6 +1,6 @@
 {
   "name": "kengen",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Customizable and seedable KenKen generator and renderer",
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
@@ -12,7 +12,7 @@
   "scripts": {
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "examples": "npx ts-node make-examples.ts",
-    "prepare": "tsc"
+    "prepublish": "tsc"
   },
   "keywords": [
     "KenKen",
