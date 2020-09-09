@@ -1,4 +1,4 @@
-import { CanvasRenderOptions, KenKen, MathOperators, Point } from '../kenken.types'
+import { CanvasRenderOptions, KenKen, Point } from '../kenken.types'
 import { KenKenGenerator } from '../KenKenGenerator'
 import { BaseRenderer, OpStrings } from './BaseRenderer'
 
@@ -38,7 +38,7 @@ export class CanvasRenderer extends BaseRenderer {
     }
   }
 
-  protected getCellCoords (o: {col: number, row: number}, renderOpts: CanvasRenderOptions): {x: number, y: number} {
+  public getCellCoords (o: {col: number, row: number}, renderOpts: CanvasRenderOptions): {x: number, y: number} {
     return {
       x: Math.ceil(o.col * renderOpts.cellSize + o.col * renderOpts.thickness + renderOpts.groupThickness / 2),
       y: Math.ceil(o.row * renderOpts.cellSize + o.row * renderOpts.thickness + renderOpts.groupThickness / 2)
@@ -55,7 +55,7 @@ export class CanvasRenderer extends BaseRenderer {
     ctx.stroke()
   }
 
-  private getRenderOpts (opts: CanvasRenderOptions = {}) {
+  public getRenderOpts (opts: CanvasRenderOptions = {}) {
     return Object.assign({}, CanvasRenderer.defaultRenderOptions, opts)
   }
 
