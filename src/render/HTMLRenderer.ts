@@ -22,7 +22,7 @@ export class HTMLRenderer extends BaseRenderer {
           operation: null,
           row: r,
           col: c,
-          class: new Set(['cell']) 
+          class: new Set(['cell'])
         })
       }
       grid.push(row)
@@ -56,7 +56,7 @@ export class HTMLRenderer extends BaseRenderer {
       html += '<div class="row">\n'
       for (const cell of row) {
         const cls = Array.from(cell.class)
-        html += `<div class="${cls.join(' ')}">\n`
+        html += `<div class="${cls.join(' ')}" data-row="${cell.row}" data-col="${cell.col}">\n`
         if (cell.operation) {
           html += `<div class="operator"> ${cell.operation}</div>`
         }
